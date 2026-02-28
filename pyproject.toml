@@ -9,4 +9,8 @@ dependencies = [
 ]
 
 [project.scripts]
-gitorizer = "main:main"
+gitorizer = "gitorizer.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

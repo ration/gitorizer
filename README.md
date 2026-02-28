@@ -17,18 +17,21 @@ Uses Linux inotify for instant change detection, with a polling fallback for oth
 Requires Python 3.14+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone <repo>
-cd gitorizer
-uv sync
+uv tool install git+https://github.com/ration/gitorizer.git
 ```
+
+Or from a local clone:
+
+```bash
+git clone https://github.com/ration/gitorizer.git
+uv tool install ./gitorizer
+```
+
+This installs the `gitorizer` binary to `~/.local/bin/`.
 
 ## Configuration
 
-Copy the example config and edit it:
-
-```bash
-cp config.example.toml config.toml
-```
+Create `$XDG_CONFIG_HOME/gitorizer/gitorizer.toml` (`XDG_CONFIG_HOME` defaults to `~/.config`):
 
 ```toml
 [defaults]
@@ -51,7 +54,7 @@ Each `[[repos]]` block must have a `path`. All other keys are optional and fall 
 ## Usage
 
 ```bash
-uv run python main.py
+gitorizer
 ```
 
 By default, gitorizer reads `$XDG_CONFIG_HOME/gitorizer/gitorizer.toml` (`XDG_CONFIG_HOME` defaults to `~/.config`). Pass `--config` to use a different file.
@@ -83,7 +86,7 @@ Description=Gitorizer git auto-commit daemon
 After=network.target
 
 [Service]
-ExecStart=/path/to/gitorizer/.venv/bin/python /path/to/gitorizer/main.py --config /path/to/config.toml
+ExecStart=%h/.local/bin/gitorizer
 Restart=on-failure
 
 [Install]
