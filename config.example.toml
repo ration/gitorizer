@@ -1,0 +1,32 @@
+# Gitorizer configuration
+# Copy this file and edit to suit your setup.
+# Run: gitorizer --config /path/to/your/config.toml
+
+[defaults]
+# Whether to push after each auto-commit (default: false)
+push = false
+
+# How often to pull from remote, in seconds. Set to 0 to disable pulling.
+pull_interval = 300  # 5 minutes
+
+# Seconds of file-change inactivity to wait before committing.
+# Prevents partial commits while files are still being written.
+commit_debounce = 10
+
+
+# Add one [[repos]] block per repository to monitor.
+
+[[repos]]
+path = "~/projects/my-repo"
+push = true          # override: push after every commit
+pull_interval = 60   # override: pull every minute
+
+[[repos]]
+path = "~/notes"
+# inherits all defaults (no push, pull every 5 min, 10s debounce)
+
+# [[repos]]
+# path = "/absolute/path/to/another-repo"
+# push = false
+# pull_interval = 0   # disable pulling for this repo
+# commit_debounce = 30

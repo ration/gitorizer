@@ -1,0 +1,12 @@
+[project]
+name = "gitorizer"
+version = "0.1.0"
+description = "Git repository daemon: auto-commit, push, and pull on file changes"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "watchdog",
+]
+
+[project.scripts]
+gitorizer = "main:main"
