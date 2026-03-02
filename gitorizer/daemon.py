@@ -27,6 +27,20 @@ def _pull_loop(config: RepoConfig, stop_event: threading.Event) -> None:
 
 def run(app_config: AppConfig) -> None:
     """Main daemon entry point. Blocks until SIGINT or SIGTERM."""
+    logger.info("Gitorizer starting up...")
+
+    # Verify git connectivity by fetching all repos at startup
+    all_ok = True
+    for repo_config in app_config.repos:
+        logger.info("Verifying git connectivity for %s...", repo_config.path)
+        if not git_ops.fetch(repo_config.path):
+            all_ok = False
+
+    if all_ok:
+        logger.info("All repositories verified successfully.")
+    else:
+        logger.warning("Some repositories failed connectivity check. Continuing anyway.")
+
     stop_event = threading.Event()
 
     def _signal_handler(signum, frame):

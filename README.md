@@ -88,6 +88,9 @@ After=network.target
 [Service]
 ExecStart=%h/.local/bin/gitorizer
 Restart=on-failure
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=default.target

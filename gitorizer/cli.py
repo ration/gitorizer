@@ -39,13 +39,16 @@ def main() -> None:
         level=getattr(logging, args.log_level),
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%Y-%m-%dT%H:%M:%S",
-        stream=sys.stdout,
+        stream=sys.stderr,
     )
 
     try:
         config = load_config(args.config)
-    except (ValueError, FileNotFoundError, OSError) as e:
-        print(f"Error loading config: {e}", file=sys.stderr)
+    except FileNotFoundError:
+        print(f"Error: Config file not found: {args.config}", file=sys.stderr)
+        sys.exit(1)
+    except (ValueError, OSError) as e:
+        print(f"Error loading config '{args.config}': {e}", file=sys.stderr)
         sys.exit(1)
 
     run(config)
