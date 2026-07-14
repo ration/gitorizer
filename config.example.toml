@@ -14,6 +14,18 @@ pull_interval = 300  # 5 minutes
 commit_debounce = 10
 
 
+# Optional hook to run after repository content changes. Changes are
+# coalesced during the quiet period, then the hook runs once with the paths
+# of every repository that changed as arguments. Runs without a shell; use an
+# array to pass fixed arguments, e.g. command = ["indexer", "--update"].
+# A run is killed after `timeout` seconds (default 300).
+#
+# [post_change_hook]
+# debounce = 30
+# timeout = 300
+# command = "/home/me/bin/update-document-index"
+
+
 # Add one [[repos]] block per repository to monitor.
 
 [[repos]]

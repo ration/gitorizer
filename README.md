@@ -10,6 +10,7 @@ Uses native filesystem events (inotify on Linux, FSEvents on macOS) for instant 
 - Auto-commits after a configurable debounce period (waits for writes to settle)
 - Optional auto-push after each commit
 - Periodic pull from remote (configurable per repo)
+- Optional debounced post-change hook after repository content changes
 - Single TOML config file with global defaults overridable per repository
 
 ## Installation
@@ -50,6 +51,28 @@ path = "~/notes"
 ```
 
 Each `[[repos]]` block must have a `path`. All other keys are optional and fall back to `[defaults]`.
+
+To run follow-up work after local commits or successful pulls, add an
+application-level post-change hook:
+
+```toml
+[post_change_hook]
+debounce = 30
+command = "/home/me/bin/update-document-index"
+```
+
+Changes are coalesced during the quiet period, then the hook runs once with
+the paths of every repository that changed as arguments, e.g.
+`update-document-index /home/me/notes /home/me/blog`. To pass fixed arguments
+of your own, use an array instead: `command = ["indexer", "--update"]`.
+
+The hook runs without a shell, so wrap pipelines or redirections in a
+script. A pending run is completed during a graceful daemon shutdown. The
+hook inherits the daemon's environment, so use an absolute executable path
+if a service cannot find it on its `PATH`.
+
+A run is killed after `timeout` seconds (default 300), so a hung hook
+cannot block later runs or the daemon's shutdown.
 
 ## Usage
 

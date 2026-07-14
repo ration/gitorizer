@@ -1,5 +1,6 @@
 import logging
 import threading
+from collections.abc import Callable
 from pathlib import Path
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
@@ -18,10 +19,16 @@ class _DebounceHandler(FileSystemEventHandler):
     Resets a timer on each relevant event; triggers commit after quiet period.
     """
 
-    def __init__(self, config: RepoConfig, stop_event: threading.Event) -> None:
+    def __init__(
+        self,
+        config: RepoConfig,
+        stop_event: threading.Event,
+        on_content_change: Callable[[], None] | None = None,
+    ) -> None:
         super().__init__()
         self._config = config
         self._stop_event = stop_event
+        self._on_content_change = on_content_change
         self._timer: threading.Timer | None = None
         self._lock = threading.Lock()
 
@@ -63,8 +70,13 @@ class _DebounceHandler(FileSystemEventHandler):
             return
 
         success = git_ops.commit(repo_path, changed)
-        if success and self._config.push:
+        if not success:
+            return
+
+        if self._config.push:
             git_ops.push(repo_path)
+        if self._on_content_change:
+            self._on_content_change()
 
     def cancel_pending(self) -> None:
         """Cancel any pending debounce timer. Call before shutdown."""
@@ -77,9 +89,14 @@ class _DebounceHandler(FileSystemEventHandler):
 class RepoWatcher:
     """Manages a watchdog Observer for a single repository."""
 
-    def __init__(self, config: RepoConfig, stop_event: threading.Event) -> None:
+    def __init__(
+        self,
+        config: RepoConfig,
+        stop_event: threading.Event,
+        on_content_change: Callable[[], None] | None = None,
+    ) -> None:
         self._config = config
-        self._handler = _DebounceHandler(config, stop_event)
+        self._handler = _DebounceHandler(config, stop_event, on_content_change)
         self._observer = Observer()
         self._observer.schedule(
             self._handler,

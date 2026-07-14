@@ -78,6 +78,15 @@ def pull(repo_path: Path) -> bool:
     return True
 
 
+def head(repo_path: Path) -> str | None:
+    """Return the current HEAD object id, or None if it cannot be read."""
+    result = _run(["git", "rev-parse", "HEAD"], cwd=repo_path)
+    if result.returncode != 0:
+        _log_git_failure(result, repo_path)
+        return None
+    return result.stdout.strip()
+
+
 def fetch(repo_path: Path) -> bool:
     """Fetch from remote. Returns True on success."""
     result = _run(["git", "fetch"], cwd=repo_path)
