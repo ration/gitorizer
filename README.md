@@ -16,6 +16,24 @@ Uses native filesystem events (inotify on Linux, FSEvents on macOS) for instant 
 
 Requires Python 3.14+ and [uv](https://docs.astral.sh/uv/).
 
+### Quick install
+
+The bundled installer installs the binary and registers gitorizer as a
+service that starts on login (launchd on macOS, a systemd user service on
+Linux):
+
+```bash
+git clone https://github.com/ration/gitorizer.git
+cd gitorizer
+python3 install.py
+```
+
+Create a [configuration file](#configuration) first so the service has
+something to watch. The manual steps the installer performs are described
+below and in the service sections at the end of this README.
+
+### Manual install
+
 ```bash
 uv tool install git+https://github.com/ration/gitorizer.git
 ```
@@ -78,6 +96,8 @@ File lists longer than 10 entries are truncated with a count of the remainder.
 
 ## Running as a systemd service (Linux)
 
+`install.py` sets this up automatically; the manual steps follow.
+
 Create `~/.config/systemd/user/gitorizer.service`:
 
 ```ini
@@ -104,6 +124,8 @@ journalctl --user -fu gitorizer
 ```
 
 ## Running as a launchd service (macOS)
+
+`install.py` sets this up automatically; the manual steps follow.
 
 Create a log directory and a LaunchAgent plist:
 
