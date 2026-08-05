@@ -19,9 +19,17 @@ class RepoConfig:
 
 
 @dataclass(frozen=True)
+class PostChangeHookConfig:
+    command: tuple[str, ...]
+    debounce: int = 30
+    timeout: int = 300  # seconds before a running hook is killed
+
+
+@dataclass(frozen=True)
 class AppConfig:
     defaults: Defaults
     repos: list[RepoConfig]
+    post_change_hook: PostChangeHookConfig | None = None
 
 
 def load_config(config_path: Path) -> AppConfig:
@@ -56,4 +64,35 @@ def load_config(config_path: Path) -> AppConfig:
     if not repos:
         raise ValueError("Config must contain at least one [[repos]] entry")
 
-    return AppConfig(defaults=defaults, repos=repos)
+    raw_post_change_hook = raw.get("post_change_hook")
+    post_change_hook = None
+    if raw_post_change_hook is not None:
+        if not isinstance(raw_post_change_hook, dict):
+            raise ValueError("post_change_hook must be a TOML table")
+        debounce = raw_post_change_hook.get("debounce", 30)
+        if type(debounce) is not int or debounce < 0:
+            raise ValueError("post_change_hook.debounce must be a non-negative integer")
+
+        timeout = raw_post_change_hook.get("timeout", 300)
+        if type(timeout) is not int or timeout <= 0:
+            raise ValueError("post_change_hook.timeout must be a positive integer")
+
+        raw_command = raw_post_change_hook.get("command")
+        if raw_command is None:
+            raise ValueError("post_change_hook must have a 'command' key")
+        if isinstance(raw_command, str) and raw_command:
+            command = (raw_command,)
+        elif (
+            isinstance(raw_command, list)
+            and raw_command
+            and all(isinstance(arg, str) and arg for arg in raw_command)
+        ):
+            command = tuple(raw_command)
+        else:
+            raise ValueError(
+                "post_change_hook.command must be a command string or a non-empty array of strings"
+            )
+
+        post_change_hook = PostChangeHookConfig(command, debounce, timeout)
+
+    return AppConfig(defaults=defaults, repos=repos, post_change_hook=post_change_hook)
